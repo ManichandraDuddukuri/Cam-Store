@@ -1,0 +1,23 @@
+/* src/components/Footer.css */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 0;
+  background: var(--surface);
+}
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.footer-brand { display: flex; align-items: center; gap: 10px; }
+.footer-name { font-family: var(--font-display); font-size: 15px; font-weight: 700; }
+.footer-name strong { color: var(--accent); }
+.logo-icon { color: var(--accent); font-size: 18px; }
+.footer-brand p { font-size: 12px; color: var(--muted); display: none; }
+
+.footer-links { display: flex; align-items: center; gap: 20px; }
+.footer-links a { font-size: 13px; color: var(--muted); transition: color var(--transition); }
+.footer-links a:hover { color: var(--accent); }
+.footer-copy { font-size: 12px; color: var(--muted); }
