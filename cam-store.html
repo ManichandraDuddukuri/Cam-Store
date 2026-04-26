@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cam Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#ffffff;--bg2:#f5f5f3;--bg3:#eeece8;--t1:#1a1a1a;--t2:#6b6b6b;--b1:rgba(0,0,0,0.1);--b2:rgba(0,0,0,0.2);--gold:#B87333;--gold-light:#D4955A}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg3);min-height:100vh}
+  .topbar{background:var(--bg);border-bottom:0.5px solid var(--b1);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:10}
+  .logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--t1);letter-spacing:-0.5px}
+  .logo span{color:var(--gold)}
+  .search-wrap{flex:1;max-width:320px;margin:0 24px;position:relative}
+  .search-wrap input{width:100%;background:var(--bg2);border:0.5px solid var(--b1);border-radius:8px;padding:7px 12px 7px 32px;font-size:13px;color:var(--t1);outline:none;font-family:'DM Sans',sans-serif}
+  .search-wrap input:focus{border-color:var(--b2)}
+  .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t2);font-size:13px}
+  .cart-btn{background:var(--gold);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .cart-btn:hover{background:var(--gold-light)}
+  .cart-count{background:#fff;color:var(--gold);border-radius:99px;width:18px;height:18px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .main{display:grid;grid-template-columns:200px 1fr;gap:0;min-height:calc(100vh - 56px)}
+  .sidebar{background:var(--bg);border-right:0.5px solid var(--b1);padding:20px 16px}
+  .filter-section{margin-bottom:20px}
+  .filter-title{font-size:11px;font-weight:500;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+  .filter-chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{padding:5px 10px;border-radius:99px;border:0.5px solid var(--b1);font-size:12px;cursor:pointer;color:var(--t2);background:var(--bg);transition:all .15s}
+  .chip.active{background:var(--gold);color:#fff;border-color:var(--gold)}
+  .chip:hover:not(.active){background:var(--bg2)}
+  .price-range{display:flex;flex-direction:column;gap:8px}
+  .price-range input[type=range]{width:100%;accent-color:var(--gold)}
+  .price-label{font-size:12px;color:var(--t2);display:flex;justify-content:space-between}
+  .products-area{padding:20px}
+  .products-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .products-title{font-size:13px;color:var(--t2)}
+  .sort-select{background:var(--bg);border:0.5px solid var(--b1);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--t1);font-family:'DM Sans',sans-serif;cursor:pointer}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:16px}
+  .card{background:var(--bg);border:0.5px solid var(--b1);border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s}
+  .card:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 8px 24px rgba(184,115,51,0.12)}
+  .card-img{height:160px;position:relative;overflow:hidden;background:var(--bg2)}
+  .card-img img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease;display:block}
+  .card:hover .card-img img{transform:scale(1.06)}
+  .img-skeleton{position:absolute;inset:0;background:var(--bg2);animation:shimmer 1.4s infinite}
+  @keyframes shimmer{0%,100%{opacity:1}50%{opacity:0.5}}
+  .badge{position:absolute;top:8px;left:8px;background:#1a1a1a;color:#fff;font-size:10px;font-weight:500;padding:3px 8px;border-radius:4px;z-index:1}
+  .badge.new{background:var(--gold)}
+  .card-body{padding:12px}
+  .card-brand{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px}
+  .card-name{font-size:13px;font-weight:500;color:var(--t1);margin-bottom:8px;line-height:1.35}
+  .card-footer{display:flex;align-items:center;justify-content:space-between}
+  .card-price{font-size:15px;font-weight:600;color:var(--t1);font-family:'Playfair Display',serif}
+  .old-price{font-size:11px;color:var(--t2);text-decoration:line-through;margin-left:4px;font-family:'DM Sans',sans-serif;font-weight:400}
+  .add-btn{width:30px;height:30px;border-radius:50%;background:var(--gold);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s}
+  .add-btn:hover{background:var(--gold-light)}
+  .add-btn:active{transform:scale(0.9)}
+  .add-btn:disabled{background:#ccc;cursor:not-allowed}
+  .stock-low{font-size:10px;color:#E24B4A;margin-top:5px}
+  .toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;z-index:200}
+  .toast.show{opacity:1;transform:translateY(0)}
+  .empty{text-align:center;padding:48px;color:var(--t2);font-size:14px;grid-column:1/-1}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:50;align-items:flex-start;justify-content:flex-end}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--bg);width:400px;height:100vh;display:flex;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,0.12)}
+  .modal-header{padding:20px 24px;border-bottom:0.5px solid var(--b1);display:flex;justify-content:space-between;align-items:center}
+  .modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--t1)}
+  .modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--t2);line-height:1;padding:0}
+  .modal-body{padding:16px 24px;overflow-y:auto;flex:1}
+  .cart-item{display:flex;gap:12px;padding:14px 0;border-bottom:0.5px solid var(--b1);align-items:center}
+  .cart-item:last-child{border-bottom:none}
+  .cart-item-img{width:60px;height:60px;border-radius:8px;object-fit:cover;border:0.5px solid var(--b1);flex-shrink:0}
+  .cart-item-info{flex:1;min-width:0}
+  .cart-item-name{font-size:13px;font-weight:500;color:var(--t1);margin-bottom:2px}
+  .cart-item-brand{font-size:11px;color:var(--t2);text-transform:uppercase;letter-spacing:0.5px}
+  .cart-item-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+  .qty-controls{display:flex;align-items:center;gap:8px}
+  .qty-btn{width:24px;height:24px;border-radius:50%;border:0.5px solid var(--b1);background:var(--bg2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--t1)}
+  .qty-btn:hover{background:var(--b1)}
+  .qty-val{font-size:13px;font-weight:500;min-width:16px;text-align:center}
+  .cart-item-price{font-size:14px;font-weight:600;color:var(--t1);font-family:'Playfair Display',serif}
+  .modal-footer{padding:20px 24px;border-top:0.5px solid var(--b1)}
+  .cart-total{display:flex;justify-content:space-between;font-size:15px;font-weight:500;color:var(--t1);margin-bottom:14px}
+  .cart-total span:last-child{font-family:'Playfair Display',serif;font-size:18px}
+  .checkout-btn{width:100%;background:var(--gold);color:#fff;border:none;border-radius:8px;padding:13px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer}
+  .checkout-btn:hover{background:var(--gold-light)}
+  .cart-empty-msg{text-align:center;color:var(--t2);font-size:13px;padding:40px 0;line-height:1.7}
+  @media(max-width:640px){
+    .main{grid-template-columns:1fr}
+    .sidebar{border-right:none;border-bottom:0.5px solid var(--b1);padding:12px 16px}
+    .filter-section{margin-bottom:12px}
+    .modal{width:100vw}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Cam<span>.</span>Store</div>
+  <div class="search-wrap">
+    <span class="search-icon">&#9906;</span>
+    <input type="text" id="searchInput" placeholder="Search cameras, lenses…" oninput="applyFilters()">
+  </div>
+  <button class="cart-btn" onclick="openCart()">
+    &#128722; Cart <span class="cart-count" id="cartCount">0</span>
+  </button>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="filter-section">
+      <div class="filter-title">Category</div>
+      <div class="filter-chips" id="catChips">
+        <div class="chip active" data-cat="all" onclick="setCat(this)">All</div>
+        <div class="chip" data-cat="mirrorless" onclick="setCat(this)">Mirrorless</div>
+        <div class="chip" data-cat="dslr" onclick="setCat(this)">DSLR</div>
+        <div class="chip" data-cat="compact" onclick="setCat(this)">Compact</div>
+        <div class="chip" data-cat="lens" onclick="setCat(this)">Lenses</div>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-title">Brand</div>
+      <div class="filter-chips" id="brandChips">
+        <div class="chip active" data-brand="all" onclick="setBrand(this)">All</div>
+        <div class="chip" data-brand="sony" onclick="setBrand(this)">Sony</div>
+        <div class="chip" data-brand="canon" onclick="setBrand(this)">Canon</div>
+        <div class="chip" data-brand="nikon" onclick="setBrand(this)">Nikon</div>
+        <div class="chip" data-brand="fuji" onclick="setBrand(this)">Fuji</div>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-title">Max Price</div>
+      <div class="price-range">
+        <input type="range" id="priceRange" min="200" max="4000" step="100" value="4000" oninput="updatePrice()">
+        <div class="price-label"><span>$200</span><span id="priceMax">$4,000</span></div>
+      </div>
+    </div>
+    <div class="filter-section">
+      <div class="filter-title">Stock</div>
+      <div class="filter-chips">
+        <div class="chip active" id="stockAll" onclick="setStock('all',this)">All</div>
+        <div class="chip" id="stockIn" onclick="setStock('in',this)">In Stock</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="products-area">
+    <div class="products-header">
+      <span class="products-title" id="resultsLabel">Showing 10 products</span>
+      <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+        <option value="default">Featured</option>
+        <option value="priceasc">Price: Low to High</option>
+        <option value="pricedesc">Price: High to Low</option>
+        <option value="name">Name A–Z</option>
+      </select>
+    </div>
+    <div class="grid" id="productGrid"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="cartModal" onclick="closeCartOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Your Cart</span>
+      <button class="modal-close" onclick="closeCart()">&#215;</button>
+    </div>
+    <div class="modal-body" id="cartBody"></div>
+    <div class="modal-footer" id="cartFooter" style="display:none">
+      <div class="cart-total"><span>Total</span><span id="cartTotal"></span></div>
+      <button class="checkout-btn" onclick="checkout()">Proceed to Checkout &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const products = [
+  {id:1,brand:'sony',cat:'mirrorless',name:'Alpha 7 IV',price:2499,oldPrice:2799,stock:5,badge:'Sale',
+   img:'https://images.unsplash.com/photo-1621829560017-6ffe5b05f03d?w=400&h=320&fit=crop&q=80'},
+  {id:2,brand:'canon',cat:'dslr',name:'EOS 90D',price:1199,oldPrice:null,stock:12,badge:null,
+   img:'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&h=320&fit=crop&q=80'},
+  {id:3,brand:'nikon',cat:'mirrorless',name:'Z6 III',price:1999,oldPrice:null,stock:3,badge:'New',
+   img:'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&h=320&fit=crop&q=80'},
+  {id:4,brand:'fuji',cat:'mirrorless',name:'X-T5',price:1699,oldPrice:1899,stock:8,badge:'Sale',
+   img:'https://images.unsplash.com/photo-1617005082133-548c4dd27f35?w=400&h=320&fit=crop&q=80'},
+  {id:5,brand:'sony',cat:'compact',name:'RX100 VII',price:1299,oldPrice:null,stock:0,badge:null,
+   img:'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=400&h=320&fit=crop&q=80'},
+  {id:6,brand:'canon',cat:'lens',name:'RF 50mm f/1.2L',price:2299,oldPrice:null,stock:6,badge:null,
+   img:'https://images.unsplash.com/photo-1606986628426-f5b0a4b09440?w=400&h=320&fit=crop&q=80'},
+  {id:7,brand:'nikon',cat:'dslr',name:'D850',price:2799,oldPrice:3199,stock:2,badge:'Sale',
+   img:'https://images.unsplash.com/photo-1581591524425-c7e0978865fc?w=400&h=320&fit=crop&q=80'},
+  {id:8,brand:'fuji',cat:'lens',name:'XF 56mm f/1.2',price:799,oldPrice:null,stock:15,badge:'New',
+   img:'https://images.unsplash.com/photo-1520390138845-fd2d229dd553?w=400&h=320&fit=crop&q=80'},
+  {id:9,brand:'sony',cat:'mirrorless',name:'ZV-E10 II',price:799,oldPrice:null,stock:20,badge:'New',
+   img:'https://images.unsplash.com/photo-1574636096329-cf41e42c0cef?w=400&h=320&fit=crop&q=80'},
+  {id:10,brand:'canon',cat:'compact',name:'PowerShot G7X III',price:699,oldPrice:799,stock:4,badge:'Sale',
+   img:'https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?w=400&h=320&fit=crop&q=80'},
+];
+
+let cart={}, activeCat='all', activeBrand='all', activeStock='all', maxPrice=4000;
+
+const fallback='https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?w=400&h=320&fit=crop&q=80';
+
+function renderGrid(){
+  let items=[...products];
+  if(activeCat!=='all') items=items.filter(p=>p.cat===activeCat);
+  if(activeBrand!=='all') items=items.filter(p=>p.brand===activeBrand);
+  if(activeStock==='in') items=items.filter(p=>p.stock>0);
+  items=items.filter(p=>p.price<=maxPrice);
+  const q=document.getElementById('searchInput').value.trim().toLowerCase();
+  if(q) items=items.filter(p=>p.name.toLowerCase().includes(q)||p.brand.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q));
+  const sort=document.getElementById('sortSelect').value;
+  if(sort==='priceasc') items.sort((a,b)=>a.price-b.price);
+  else if(sort==='pricedesc') items.sort((a,b)=>b.price-a.price);
+  else if(sort==='name') items.sort((a,b)=>a.name.localeCompare(b.name));
+  const grid=document.getElementById('productGrid');
+  document.getElementById('resultsLabel').textContent=`Showing ${items.length} product${items.length!==1?'s':''}`;
+  if(!items.length){grid.innerHTML='<div class="empty">No products match your filters.</div>';return;}
+  grid.innerHTML=items.map(p=>`
+    <div class="card" id="card-${p.id}">
+      <div class="card-img">
+        <div class="img-skeleton" id="skel-${p.id}"></div>
+        <img src="${p.img}" alt="${p.name}" loading="lazy"
+          onload="document.getElementById('skel-${p.id}').style.display='none'"
+          onerror="this.src='${fallback}';document.getElementById('skel-${p.id}').style.display='none'">
+        ${p.badge?`<div class="badge${p.badge==='New'?' new':''}">${p.badge}</div>`:''}
+      </div>
+      <div class="card-body">
+        <div class="card-brand">${p.brand}</div>
+        <div class="card-name">${p.name}</div>
+        <div class="card-footer">
+          <div><span class="card-price">$${p.price.toLocaleString()}</span>${p.oldPrice?`<span class="old-price">$${p.oldPrice.toLocaleString()}</span>`:''}</div>
+          <button class="add-btn" onclick="addToCart(${p.id})" ${p.stock===0?'disabled':''}>+</button>
+        </div>
+        ${p.stock>0&&p.stock<=3?`<div class="stock-low">Only ${p.stock} left!</div>`:p.stock===0?`<div class="stock-low">Out of stock</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function setCat(el){document.querySelectorAll('#catChips .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');activeCat=el.dataset.cat;applyFilters();}
+function setBrand(el){document.querySelectorAll('#brandChips .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');activeBrand=el.dataset.brand;applyFilters();}
+function setStock(val,el){document.getElementById('stockAll').classList.remove('active');document.getElementById('stockIn').classList.remove('active');el.classList.add('active');activeStock=val;applyFilters();}
+function updatePrice(){maxPrice=parseInt(document.getElementById('priceRange').value);document.getElementById('priceMax').textContent='$'+maxPrice.toLocaleString();applyFilters();}
+function applyFilters(){renderGrid();}
+
+function addToCart(id){
+  const p=products.find(x=>x.id===id);
+  if(!p||p.stock===0) return;
+  cart[id]=(cart[id]||0)+1;
+  updateCartCount();
+  showToast(`${p.name} added to cart`);
+  const card=document.getElementById('card-'+id);
+  if(card){card.style.transform='scale(1.04)';setTimeout(()=>card.style.transform='',200);}
+}
+function updateCartCount(){document.getElementById('cartCount').textContent=Object.values(cart).reduce((a,b)=>a+b,0);}
+function openCart(){renderCartModal();document.getElementById('cartModal').classList.add('open');}
+function closeCart(){document.getElementById('cartModal').classList.remove('open');}
+function closeCartOutside(e){if(e.target===document.getElementById('cartModal'))closeCart();}
+
+function renderCartModal(){
+  const body=document.getElementById('cartBody');
+  const footer=document.getElementById('cartFooter');
+  const keys=Object.keys(cart).filter(k=>cart[k]>0);
+  if(!keys.length){body.innerHTML='<div class="cart-empty-msg">Your cart is empty.<br><br>Browse our collection and add some gear!</div>';footer.style.display='none';return;}
+  let total=0;
+  body.innerHTML=keys.map(id=>{
+    const p=products.find(x=>x.id==id);
+    const sub=p.price*cart[id];total+=sub;
+    return `<div class="cart-item">
+      <img class="cart-item-img" src="${p.img}" alt="${p.name}" onerror="this.src='${fallback}'">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${p.name}</div>
+        <div class="cart-item-brand">${p.brand}</div>
+        <div class="cart-item-bottom">
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty(${id},-1)">&#8722;</button>
+            <span class="qty-val">${cart[id]}</span>
+            <button class="qty-btn" onclick="changeQty(${id},1)">+</button>
+          </div>
+          <div class="cart-item-price">$${sub.toLocaleString()}</div>
+        </div>
+      </div></div>`;
+  }).join('');
+  document.getElementById('cartTotal').textContent='$'+total.toLocaleString();
+  footer.style.display='block';
+}
+
+function changeQty(id,delta){
+  cart[id]=Math.max(0,(cart[id]||0)+delta);
+  if(cart[id]===0) delete cart[id];
+  updateCartCount();renderCartModal();
+}
+
+function checkout(){
+  const items=Object.entries(cart).map(([id,qty])=>{const p=products.find(x=>x.id==id);return `${p.name} x${qty} ($${(p.price*qty).toLocaleString()})`;}).join('\n');
+  alert(`Order placed!\n\n${items}\n\nThank you for shopping at Cam Store!`);
+  cart={};updateCartCount();closeCart();showToast('Order placed successfully!');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+renderGrid();
+</script>
+</body>
+</html>
